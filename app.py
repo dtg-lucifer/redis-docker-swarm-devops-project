@@ -4,20 +4,27 @@ import datetime
 import redis
 import os
 import ast
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(verbose=True)
 
 app = Flask(__name__)
 
 # Get Redis host & port from environment variables (use defaults for local)
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASS = os.getenv("REDIS_PASS", "demo_pass")
 
 # Connect to Redis
 try:
-    redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
     redis_client.ping()
-except redis.exceptions.ConnectionError:
-    print("⚠️ Warning: Redis is not running! The app will work, but metrics won't be saved.")
+except redis.exceptions.ConnectionError as e:
+    print(f"⚠️ Warning: Redis connection error: {str(e)}")
+    print("The app will work, but metrics won't be saved.")
     redis_client = None
+
 
 def get_system_metrics():
     metrics = {
@@ -34,6 +41,7 @@ def get_system_metrics():
 
     return metrics
 
+
 @app.route('/')
 def index():
     if redis_client:
@@ -43,9 +51,14 @@ def index():
         metrics = []
     return render_template('index.html', metrics=metrics)
 
+
 @app.route('/metrics')
 def metrics():
     return jsonify(get_system_metrics())
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "UP"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

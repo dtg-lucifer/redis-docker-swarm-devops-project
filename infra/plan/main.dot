@@ -1,0 +1,21 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "google_compute_firewall.allow_http" [label="google_compute_firewall.allow_http"];
+  "google_compute_firewall.allow_internal" [label="google_compute_firewall.allow_internal"];
+  "google_compute_firewall.allow_ssh" [label="google_compute_firewall.allow_ssh"];
+  "google_compute_firewall.allow_swarm" [label="google_compute_firewall.allow_swarm"];
+  "google_compute_instance.swarm_manager" [label="google_compute_instance.swarm_manager"];
+  "google_compute_instance.swarm_worker" [label="google_compute_instance.swarm_worker"];
+  "google_compute_network.swarm_network" [label="google_compute_network.swarm_network"];
+  "google_compute_subnetwork.swarm_subnet" [label="google_compute_subnetwork.swarm_subnet"];
+  "local_file.deploy_script" [label="local_file.deploy_script"];
+  "google_compute_firewall.allow_http" -> "google_compute_network.swarm_network";
+  "google_compute_firewall.allow_internal" -> "google_compute_network.swarm_network";
+  "google_compute_firewall.allow_ssh" -> "google_compute_network.swarm_network";
+  "google_compute_firewall.allow_swarm" -> "google_compute_network.swarm_network";
+  "google_compute_instance.swarm_manager" -> "google_compute_subnetwork.swarm_subnet";
+  "google_compute_instance.swarm_worker" -> "google_compute_instance.swarm_manager";
+  "google_compute_subnetwork.swarm_subnet" -> "google_compute_network.swarm_network";
+  "local_file.deploy_script" -> "google_compute_instance.swarm_worker";
+}

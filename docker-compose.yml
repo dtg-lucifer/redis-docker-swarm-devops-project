@@ -1,0 +1,54 @@
+services:
+  redis-primary:
+    image: bitnami/redis:7.4
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=${REDIS_PASS}
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - "redis_data:/bitnami/redis/data"
+    networks:
+      - redis_network
+
+  redis-secondary:
+    image: bitnami/redis:7.4
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-primary
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-primary
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_PASSWORD=${REDIS_PASS}
+      - REDIS_PASSWORD=${REDIS_PASS}
+      # - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    networks:
+      - redis_network
+
+  app:
+    build:
+      context: .
+    ports:
+      - "5001:5001"
+    environment:
+      - REDIS_HOST=redis-primary
+      - REDIS_PORT=6379
+      - REDIS_PASS=${REDIS_PASS}
+    depends_on:
+      - redis-primary
+      - redis-secondary
+    networks:
+      - redis_network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  redis_network:
+    driver: bridge

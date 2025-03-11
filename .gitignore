@@ -1,0 +1,19 @@
+# ---------------
+# Environment
+# ---------------
+.env
+**/vars/**
+**credentials.json
+
+# ---------------
+# Terraform
+# ---------------
+**.tfvars
+**.tfstate
+**.terraform
+
+
+# ---------------
+# SSH
+# ---------------
+id_rsa**

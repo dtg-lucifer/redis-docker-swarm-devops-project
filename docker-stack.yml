@@ -1,0 +1,148 @@
+services:
+  redis-primary:
+    image: bitnami/redis:7.4
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=${REDIS_PASS}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - "redis_data:/bitnami/redis/data"
+    networks:
+      - redis_network
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 500M
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASS}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis-secondary:
+    image: bitnami/redis:7.4
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-primary
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-primary
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_PASSWORD=${REDIS_PASS}
+      - REDIS_PASSWORD=${REDIS_PASS}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    networks:
+      - redis_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 500M
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASS}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build:
+      context: .
+      args:
+        REDIS_HOST: 127.0.0.1
+        REDIS_PORT: 6379
+        REDIS_PASS: ${REDIS_PASS}
+    ports:
+      - "5001:5001"
+    environment:
+      - REDIS_HOST=redis-primary
+      - REDIS_PORT=6379
+      - REDIS_PASS=${REDIS_PASS}
+    depends_on:
+      - redis-primary
+      - redis-secondary
+    networks:
+      - redis_network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 500M
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      mode: replicated
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  redis_network:
+    driver: overlay
+    attachable: true
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.0.0.0/24"
+    driver_opts:
+      encrypted: "true"
