@@ -35,7 +35,13 @@ services:
         order: stop-first
     healthcheck:
       test:
-        ["CMD", "redis-cli", "-a", "$(cat /run/secrets/redis_password)", "ping"]
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "$$(cat /run/secrets/redis_password)",
+          "ping",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -83,7 +89,13 @@ services:
         order: stop-first
     healthcheck:
       test:
-        ["CMD", "redis-cli", "-a", "$(cat /run/secrets/redis_password)", "ping"]
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "$$(cat /run/secrets/redis_password)",
+          "ping",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -110,18 +122,18 @@ services:
       - redis-secondary
     networks:
       - redis_network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "sh",
-          "-c",
-          "redis-cli -a $(cat /run/secrets/redis_password) ping",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD",
+    #       "sh",
+    #       "-c",
+    #       "curl -f http://localhost:5001/health || exit 1",
+    #     ]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 30s
     deploy:
       replicas: 3
       resources:
