@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/dtg-lucifer/redis-docker-swarm-devops-project/actions/workflows/docker-build.yml/badge.svg)](https://github.com/dtg-lucifer/redis-docker-swarm-devops-project/actions/workflows/docker-build.yml)
+
 # docker-project
 # Docker Productivity Toolkit - README
 
