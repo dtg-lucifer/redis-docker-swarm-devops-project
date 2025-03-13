@@ -14,12 +14,23 @@ app = Flask(__name__)
 # Get Redis host & port from environment variables (use defaults for local)
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_PASS = os.getenv("REDIS_PASS", "demo_pass")
+
+# Function to read password from Docker secret file if it exists
+def get_secret(secret_name: str, default_value: str):
+    secret_path = f"/run/secrets/{secret_name}"
+    if os.path.isfile(secret_path):
+        with open(secret_path, 'r') as secret_file:
+            return secret_file.read().strip()
+    return default_value
+
+# Try to get Redis password from environment or secret
+REDIS_PASS = get_secret("redis_password_secret", os.getenv("REDIS_PASS", "demo_pass"))
 
 # Connect to Redis
 try:
     redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASS, decode_responses=True)
     redis_client.ping()
+    print(f"✅ Successfully connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
 except redis.exceptions.ConnectionError as e:
     print(f"⚠️ Warning: Redis connection error: {str(e)}")
     print("The app will work, but metrics won't be saved.")

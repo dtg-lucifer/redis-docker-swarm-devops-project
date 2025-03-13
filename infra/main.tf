@@ -156,7 +156,7 @@ resource "local_file" "deploy_script" {
     MANAGER_IP=$(gcloud compute instances describe ${google_compute_instance.swarm_manager.name} --zone=${google_compute_instance.swarm_manager.zone} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
     WORKER_IP=$(gcloud compute instances describe ${google_compute_instance.swarm_worker.name} --zone=${google_compute_instance.swarm_worker.zone} --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
     SSH_USER=${var.ssh_user}
-    ANSIBLE_DIR=../ansible
+    ANSIBLE_DIR=${path.module}/ansible
     
     echo "Waiting for instances to be accessible..."
     sleep 30
