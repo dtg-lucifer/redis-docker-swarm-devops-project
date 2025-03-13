@@ -5,10 +5,10 @@ services:
       - "6379:6379"
     environment:
       - REDIS_REPLICATION_MODE=master
-      - REDIS_PASSWORD_FILE=/run/secrets/redis_password_secret
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     secrets:
-      - redis_password_secret
+      - redis_password
     volumes:
       - "redis_data:/bitnami/redis/data"
     networks:
@@ -35,13 +35,7 @@ services:
         order: stop-first
     healthcheck:
       test:
-        [
-          "CMD",
-          "redis-cli",
-          "-a",
-          "$(cat /run/secrets/redis_password_secret)",
-          "ping",
-        ]
+        ["CMD", "redis-cli", "-a", "$(cat /run/secrets/redis_password)", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -62,11 +56,11 @@ services:
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis-primary
       - REDIS_MASTER_PORT_NUMBER=6379
-      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/redis_password_secret
-      - REDIS_PASSWORD_FILE=/run/secrets/redis_password_secret
+      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/redis_password
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
     secrets:
-      - redis_password_secret
+      - redis_password
     networks:
       - redis_network
     deploy:
@@ -89,13 +83,7 @@ services:
         order: stop-first
     healthcheck:
       test:
-        [
-          "CMD",
-          "redis-cli",
-          "-a",
-          "$(cat /run/secrets/redis_password_secret)",
-          "ping",
-        ]
+        ["CMD", "redis-cli", "-a", "$(cat /run/secrets/redis_password)", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -107,20 +95,16 @@ services:
         max-file: "3"
 
   app:
-    build:
-      context: .
-      args:
-        REDIS_HOST: 127.0.0.1
-        REDIS_PORT: 6379
+    image: devpiush/py_system_monitoring_app:latest
     ports:
       - "5001:5001"
     environment:
       - REDIS_HOST=redis-primary
       - REDIS_PORT=6379
       - REDIS_PASS=${REDIS_PASS}
-      - REDIS_PASSWORD_FILE=/run/secrets/redis_password_secret
+      - REDIS_PASSWORD_FILE=/run/secrets/redis_password
     secrets:
-      - redis_password_secret
+      - redis_password
     depends_on:
       - redis-primary
       - redis-secondary
@@ -132,7 +116,7 @@ services:
           "CMD",
           "sh",
           "-c",
-          "redis-cli -a $(cat /run/secrets/redis_password_secret) ping",
+          "redis-cli -a $(cat /run/secrets/redis_password) ping",
         ]
       interval: 10s
       timeout: 5s
@@ -165,7 +149,7 @@ services:
         max-file: "3"
 
 secrets:
-  redis_password_secret:
+  redis_password:
     external: true
 
 volumes:

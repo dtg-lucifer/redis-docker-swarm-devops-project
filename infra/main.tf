@@ -104,7 +104,8 @@ resource "google_compute_instance" "swarm_manager" {
   }
 
   metadata = {
-    ssh-keys = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
+    startup-script = "${file("${path.module}/scripts/startup.sh")}"
+    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
   }
 
   service_account {
@@ -137,7 +138,8 @@ resource "google_compute_instance" "swarm_worker" {
   }
 
   metadata = {
-    ssh-keys = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
+    startup-script = "${file("${path.module}/scripts/startup_with_nginx.sh")}"
+    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
   }
 
   service_account {

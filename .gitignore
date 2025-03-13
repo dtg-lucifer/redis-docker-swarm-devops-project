@@ -10,8 +10,9 @@
 # Terraform
 # ---------------
 **.tfvars
-**.tfstate
+**.tfstate**
 **.terraform
+**.tfplan
 
 
 # ---------------
