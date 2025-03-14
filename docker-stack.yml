@@ -117,7 +117,6 @@ services:
     environment:
       - REDIS_HOST=redis-primary
       - REDIS_PORT=6379
-      - REDIS_PASS=${REDIS_PASS}
       - REDIS_PASSWORD_FILE=/run/secrets/redis_password
     secrets:
       - redis_password

@@ -22,9 +22,9 @@ ENV REDIS_HOST=${REDIS_HOST} \
   REDIS_PORT=${REDIS_PORT} \
   REDIS_PASS=${REDIS_PASS}
 
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:5001/health')" || exit 1
+# # Add healthcheck
+# HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+#   CMD python -c "import requests; requests.get('http://localhost:5001/health')" || exit 1
 
 # Run app with proper signal handling
 ENTRYPOINT ["python", "app.py"]
