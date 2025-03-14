@@ -1,0 +1,11 @@
+---
+- name: Update Docker Swarm service
+  hosts: managers
+  become: true
+  tasks:
+    - name: Update the Swarm service
+      command: docker service update sw_app
+
+    - name: Wait for 10 seconds for service stabilization
+      pause:
+        seconds: 10
