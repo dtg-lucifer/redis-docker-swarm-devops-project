@@ -141,7 +141,7 @@ services:
         max_attempts: 5
         window: 120s
       update_config:
-        parallelism: 1
+        parallelism: 2
         delay: 10s
         order: start-first
         failure_action: rollback
