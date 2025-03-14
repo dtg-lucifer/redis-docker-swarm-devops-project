@@ -125,15 +125,9 @@ services:
       - redis-secondary
     networks:
       - redis_network
-    healthcheck:
-      test:
-        ["CMD", "sh", "-c", "curl -f http://localhost:5001/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
     deploy:
-      replicas: 3
+      replicas: 10
+      mode: replicated
       resources:
         limits:
           cpus: "0.5"
@@ -151,7 +145,6 @@ services:
         delay: 10s
         order: start-first
         failure_action: rollback
-      mode: replicated
     logging:
       driver: "json-file"
       options:
