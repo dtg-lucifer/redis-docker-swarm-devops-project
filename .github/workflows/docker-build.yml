@@ -50,3 +50,52 @@ jobs:
         run: |
           docker push ${{ vars.DOCKER_HUB_USERNAME }}/py_system_monitoring_app:${{ github.sha }}
           docker push ${{ vars.DOCKER_HUB_USERNAME }}/py_system_monitoring_app:latest
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: ["build"]
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Install SSH Client
+  #       run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+  #     - name: Install Ansible
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y ansible
+  #         ansible-galaxy collection install community.docker
+
+  #     - name: Deploy with Ansible
+  #       env:
+  #         ANSIBLE_HOST_KEY_CHECKING: "False"
+  #         DOCKER_HUB_USERNAME: ${{ vars.DOCKER_HUB_USERNAME }}
+  #         IMAGE_TAG: "latest"
+  #       run: |
+  #         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+  #         chmod 600 private_key.pem
+  #         ansible-playbook -i ansible/hosts ansible/swarm-setup.yml \
+  #           --user ubuntu \
+  #           --private-key private_key.pem \
+  #           --extra-vars "image=${DOCKER_HUB_USERNAME}/py_system_monitoring_app:${IMAGE_TAG}"
+
+  update-deployment:
+    runs-on: ubuntu-latest
+    needs: ["build"]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install SSH Client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      - name: SSH Into the manager node
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} piush@${{ secrets.MANAGER_IP }} << 'EOF'
+          # Update the system
+          sudo apt-get update && sudo apt-get upgrade -y
+          # Update the docker service 
+          sudo docker service update sw_app
+          exit
+          EOF

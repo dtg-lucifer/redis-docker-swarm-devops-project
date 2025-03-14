@@ -76,9 +76,8 @@ resource "google_compute_firewall" "allow_swarm" {
     ports    = ["7946", "4789"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
-  source_tags   = ["swarm-node"]
-  target_tags   = ["swarm-node"]
+  source_tags = ["swarm-node"]
+  target_tags = ["swarm-node"]
 }
 
 # Compute Instances
@@ -106,7 +105,7 @@ resource "google_compute_instance" "swarm_manager" {
 
   metadata = {
     startup-script = "${file("${path.module}/scripts/startup.sh")}"
-    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
+    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")} ${var.ssh_user}:${file("/home/piush/.ssh/id_rsa.pub")}"
   }
 
   service_account {
@@ -140,7 +139,7 @@ resource "google_compute_instance" "swarm_worker" {
 
   metadata = {
     startup-script = "${file("${path.module}/scripts/startup_with_nginx.sh")}"
-    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")}"
+    ssh-keys       = "${var.ssh_user}:${file("${path.module}/keys/id_rsa.pub")} ${var.ssh_user}:${file("/home/piush/.ssh/id_rsa.pub")}"
   }
 
   service_account {

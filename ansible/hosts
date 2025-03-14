@@ -1,9 +1,0 @@
-[servers]
-
-[managers]
-
-[workers]
-
-[swarm:children]
-managers
-workers
