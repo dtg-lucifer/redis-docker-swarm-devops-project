@@ -76,8 +76,9 @@ resource "google_compute_firewall" "allow_swarm" {
     ports    = ["7946", "4789"]
   }
 
-  source_tags = ["swarm-node"]
-  target_tags = ["swarm-node"]
+  source_ranges = ["0.0.0.0/0"]
+  source_tags   = ["swarm-node"]
+  target_tags   = ["swarm-node"]
 }
 
 # Compute Instances
