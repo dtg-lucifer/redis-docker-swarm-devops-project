@@ -90,12 +90,23 @@ jobs:
       - name: Install SSH Client
         run: sudo apt-get update && sudo apt-get install -y openssh-client
 
-      - name: SSH Into the manager node
+      - name: SSH into the manager node
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} piush@${{ secrets.MANAGER_IP }} << 'EOF'
-          # Update the system
-          sudo apt-get update && sudo apt-get upgrade -y
-          # Update the docker service 
-          sudo docker service update sw_app
-          exit
+          # 1) Install SSH client (if not already installed)
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
+
+          # 2) Create private key file from GitHub secret
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
+          chmod 600 id_rsa
+
+          # 3) SSH into the manager node
+          ssh -o StrictHostKeyChecking=no -i id_rsa ubuntu@${{ secrets.MANAGER_IP }} << 'EOF'
+            # Update the system
+            sudo apt-get update && sudo apt-get upgrade -y
+
+            # Update your Docker Swarm service (example name: sm_app)
+            sudo docker service update sm_app
+
+            exit
           EOF
