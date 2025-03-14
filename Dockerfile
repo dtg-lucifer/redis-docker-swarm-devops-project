@@ -27,4 +27,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD python -c "import requests; requests.get('http://localhost:5001/health')" || exit 1
 
 # Run app with proper signal handling
-CMD ["python", "app.py"]
+ENTRYPOINT ["python", "app.py"]

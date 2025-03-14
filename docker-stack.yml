@@ -2,7 +2,8 @@ services:
   redis-primary:
     image: bitnami/redis:7.4
     ports:
-      - "6379:6379"
+      - published: 6379
+        target: 6379
     environment:
       - REDIS_REPLICATION_MODE=master
       - REDIS_PASSWORD_FILE=/run/secrets/redis_password
@@ -55,7 +56,8 @@ services:
   redis-secondary:
     image: bitnami/redis:7.4
     ports:
-      - "6380:6379"
+      - published: 6380
+        target: 6379
     depends_on:
       - redis-primary
     environment:
@@ -108,8 +110,10 @@ services:
 
   app:
     image: devpiush/py_system_monitoring_app:latest
+    command: ["python", "app.py"]
     ports:
-      - "5001:5001"
+      - published: 5001
+        target: 5001
     environment:
       - REDIS_HOST=redis-primary
       - REDIS_PORT=6379
@@ -122,18 +126,13 @@ services:
       - redis-secondary
     networks:
       - redis_network
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "sh",
-    #       "-c",
-    #       "curl -f http://localhost:5001/health || exit 1",
-    #     ]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
-    #   start_period: 30s
+    healthcheck:
+      test:
+        ["CMD", "sh", "-c", "curl -f http://localhost:5001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     deploy:
       replicas: 3
       resources:
@@ -171,10 +170,5 @@ volumes:
 networks:
   redis_network:
     driver: overlay
-    attachable: true
-    ipam:
-      driver: default
-      config:
-        - subnet: "10.0.0.0/24"
     driver_opts:
       encrypted: "true"
