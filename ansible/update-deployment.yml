@@ -1,10 +1,13 @@
 ---
-- name: Update Docker Swarm service
-  hosts: managers
+- name: Pull latest image and update Swarm service
+  hosts: swarm_nodes
   become: true
   tasks:
-    - name: Update the Swarm service
-      command: docker service update sw_app
+    - name: Pull the latest image
+      command: docker pull devpiush/py_system_monitoring_app:latest
+
+    - name: Update the Swarm service with the latest image
+      command: docker service update --image devpiush/py_system_monitoring_app:latest sw_app
 
     - name: Wait for 10 seconds for service stabilization
       pause:
