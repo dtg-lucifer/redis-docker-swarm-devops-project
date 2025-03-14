@@ -105,8 +105,8 @@ jobs:
             # Update the system
             sudo apt-get update && sudo apt-get upgrade -y
 
-            # Update your Docker Swarm service (example name: sm_app)
-            sudo docker service update sm_app
+            # Update your Docker Swarm service
+            sudo docker service update sw_app
 
             exit
           EOF
