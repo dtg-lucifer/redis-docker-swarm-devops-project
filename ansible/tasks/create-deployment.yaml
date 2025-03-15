@@ -1,0 +1,59 @@
+---
+- name: Create Docker Swarm deployment from the docker-stack.yml file
+  hosts: managers
+  become: true
+  vars:
+    stack_name: sw
+    redis_password: "{{ lookup('env', 'REDIS_PASS') | default('securepassword', true) }}"
+  tasks:
+    - name: Create directory for stack files
+      file:
+        path: /home/{{ ansible_user }}/docker-stack
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Copy docker-stack.yml to remote manager
+      copy:
+        src: "{{ playbook_dir }}/../../docker-stack.yml"
+        dest: /home/{{ ansible_user }}/docker-stack/docker-stack.yml
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0644"
+
+    - name: Check if redis_password secret exists
+      command: sudo docker secret inspect redis_password
+      register: secret_check
+      changed_when: false
+      failed_when: false
+
+    - name: Create redis_password secret if it doesn't exist
+      shell: echo "{{ redis_password }}" | sudo docker secret create redis_password -
+      when: secret_check.rc != 0
+
+    - name: Deploy the Docker stack
+      command: sudo docker stack deploy -c /home/{{ ansible_user }}/docker-stack/docker-stack.yml {{ stack_name }}
+      register: deploy_result
+      changed_when: "'Creating network' in deploy_result.stdout or 'Creating service' in deploy_result.stdout"
+
+    - name: Check if the deployment was successful
+      debug:
+        msg: "Deployment was successful"
+      when: deploy_result is not failed
+
+    - name: Check if the deployment failed
+      debug:
+        msg: "Deployment failed: {{ deploy_result.stderr }}"
+      when: deploy_result is failed
+
+    - name: Verify stack services are running
+      command: sudo docker stack services {{ stack_name }}
+      register: stack_services
+      changed_when: false
+      when: deploy_result is not failed
+
+    - name: Display services status
+      debug:
+        msg: "{{ stack_services.stdout_lines }}"
+      when: deploy_result is not failed

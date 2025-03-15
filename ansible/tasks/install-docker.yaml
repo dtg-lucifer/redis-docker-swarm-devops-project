@@ -1,0 +1,48 @@
+---
+- name: Update system and install docker
+  hosts: swarm
+  become: true
+  tasks:
+    - name: Update system
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        upgrade: full
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+
+    - name: Download Docker installation script
+      get_url:
+        url: https://get.docker.com
+        dest: /tmp/get-docker.sh
+        mode: "0755"
+
+    - name: Install Docker using the installation script
+      shell: sh /tmp/get-docker.sh
+      args:
+        executable: /bin/bash
+
+    - name: Remove Docker installation script
+      file:
+        path: /tmp/get-docker.sh
+        state: absent
+
+    # - name: Download docker installation script
+    #   command: |
+    #     sudo -E sh -c apt-get -qq update >/dev/null
+    #     sudo -E sh -c DEBIAN_FRONTEND=noninteractive apt-get -y -qq install ca-certificates curl >/dev/null
+    #     sudo -E sh -c install -m 0755 -d /etc/apt/keyrings
+    #     sudo -E sh -c curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" -o /etc/apt/keyrings/docker.asc
+    #     sudo -E sh -c chmod a+r /etc/apt/keyrings/docker.asc
+    #     sudo -E sh -c echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu focal stable" > /etc/apt/sources.list.d/docker.list
+    #     sudo -E sh -c apt-get -qq update >/dev/null
+    #     sudo -E sh -c DEBIAN_FRONTEND=noninteractive apt-get -y -qq install docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-ce-rootless-extras docker-buildx-plugin >/dev/null
+    #     sudo -E sh -c docker version

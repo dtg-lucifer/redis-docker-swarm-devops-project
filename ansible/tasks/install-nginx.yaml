@@ -1,0 +1,27 @@
+---
+- name: Install nginx on the worker nodes
+  hosts: workers
+  become: true
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start and enable nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Ensure nginx is running
+      command: systemctl status nginx
+      register: nginx_status
+
+    - name: Ensure nginx is enabled
+      command: systemctl is-enabled nginx
+      register: nginx_enabled
+
+    - debug:
+        msg: "Nginx is running on {{ inventory_hostname }}"
+      when: "'active (running)' in nginx_status.stdout"

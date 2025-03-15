@@ -1,0 +1,26 @@
+---
+# Setup the swarm manager
+- name: Setup swarm manager node
+  hosts: managers
+  become: true
+  tasks:
+    - name: Initialize Docker Swarm
+      command: docker swarm init
+      register: swarm_init
+      changed_when: "'Swarm initialized' in swarm_init.stdout"
+
+    - name: Get the join token for worker nodes
+      command: docker swarm join-token -q worker
+      register: worker_join_token
+
+    - name: Set join token as fact
+      set_fact:
+        worker_token: "{{ worker_join_token.stdout }}"
+
+# Join workers to the swarm
+- name: Join worker nodes to the swarm
+  hosts: workers
+  become: true
+  tasks:
+    - name: Join the worker node to the swarm cluster
+      command: docker swarm join --token {{ hostvars[groups['managers'][0]]['worker_token'] }} {{ hostvars[groups['managers'][0]]['ansible_default_ipv4']['address'] }}:2377

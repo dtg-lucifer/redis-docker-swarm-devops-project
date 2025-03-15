@@ -1,0 +1,25 @@
+---
+- name: Setup Nginx Proxy on Worker Node
+  hosts: workers
+  become: true
+  tasks:
+    - name: Copy the nginx config file to worker node
+      copy:
+        src: "../../nginx/nginx.conf"
+        dest: /etc/nginx/sites-enabled/default
+        owner: root
+        group: root
+        mode: "0644"
+      register: nginx_config_copied
+
+    - name: Reload nginx service
+      systemd:
+        name: nginx
+        state: reloaded
+      when: nginx_config_copied.changed
+
+    - name: Ensure nginx is running
+      systemd:
+        name: nginx
+        state: started
+        enabled: true
