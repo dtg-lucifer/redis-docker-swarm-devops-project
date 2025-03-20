@@ -1,3 +1,5 @@
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1742032789490/5b9ca928-eef4-4666-82fa-98713bfc4258.png?auto=compress,format&format=webp)
+
 [![Build Status](https://github.com/dtg-lucifer/redis-docker-swarm-devops-project/actions/workflows/docker-build.yml/badge.svg)](https://github.com/dtg-lucifer/redis-docker-swarm-devops-project/actions/workflows/docker-build.yml)
 
 # Docker swarm project deployed on GCP 🚀
